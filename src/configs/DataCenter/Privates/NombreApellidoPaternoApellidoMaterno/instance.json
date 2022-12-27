@@ -1,0 +1,32 @@
+{
+    "Services": {
+        "APIRest": {
+            "Metodos": {
+                "GET": true,
+                "POST": true,
+                "PUT": true,
+                "DELETE": true
+            }
+        },
+        "DataCenter": {
+            "MicrosoftSQL": {
+                "Host": "localhost",
+                "Port": "1433",
+                "UserName": "sa",
+                "Password": "sql$1%3i"
+            },
+            "MySQL": {
+                "Host": "localhost",
+                "Port": "3306",
+                "UserName": "root",
+                "Password": "mysql3i"
+            },
+            "PostgreSQL": {
+                "Host": "localhost",
+                "Port": "5432",
+                "UserName": "postgres",
+                "Password": "pgsql3i"
+            }
+        }
+    }
+}
