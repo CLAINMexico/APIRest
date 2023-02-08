@@ -9,7 +9,6 @@ import url from "url";
 import CryptoJS from "crypto-js";
 import NodeMailer from "nodemailer";
 import { google } from "googleapis";
-import { Buffer } from "node:buffer";
 
 // Instancia de Librerias Secundarias (Dependencias del Proyecto)
 const Speakeasy = require('speakeasy');
@@ -29,7 +28,7 @@ export var GlobalVariables = {
     Application: {
         Name: 'APIRest',
         Slogan: 'Application Programming Interface REST',
-        Version: '1.0.6',
+        Version: '1.0.1',
         Environment: 'Development'
     },
     Server: {
@@ -47,9 +46,8 @@ export var GlobalVariables = {
     Dependencies: {
         Cors: {
             origin: "*",
-            methods: "GET, POST, PUT, DELETE",
-            preflightContinue: false,
-            optionsSuccessStatus: 200
+            allowedHeaders: "*",
+            methods: ["GET", "POST", "PUT", "DELETE"]
         },
         Https: {
             Environment: {
@@ -214,6 +212,64 @@ export class APIRest {
                             if (ObjectData[Item] === null) {
                                 ObjectData[Item] = '';
                             }
+                        }
+                    });
+                    return Data;
+                }
+            },
+            Encrypt: {
+                Object: (Data) => {
+                    if (typeof Data !== 'object') {
+                        return Data;
+                    }
+                    for (let Item in Data) {
+                        switch (typeof Data[Item]) {
+                            case 'number':
+                                Data[Item] = this.Dependencies.CryptoJS.Encrypt(Data[Item].toString());
+                                break;
+                            case 'string':
+                                Data[Item] = this.Dependencies.CryptoJS.Encrypt(Data[Item]);
+                                break;
+                        }
+                    }
+                    return Data;
+                },
+                ArrayObjects: (Data) => {
+                    if (typeof Data !== 'object') {
+                        return Data;
+                    }
+                    Data.forEach((ObjectData, IndexArray) => {
+                        for (let Item in ObjectData) {
+                            switch (typeof ObjectData[Item]) {
+                                case 'number':
+                                    ObjectData[Item] = this.Dependencies.CryptoJS.Encrypt(ObjectData[Item].toString());
+                                    break;
+                                case 'string':
+                                    ObjectData[Item] = this.Dependencies.CryptoJS.Encrypt(ObjectData[Item]);
+                                    break;
+                            }
+                        }
+                    });
+                    return Data;
+                }
+            },
+            Decrypt: {
+                Object: (Data) => {
+                    if (typeof Data !== 'object') {
+                        return Data;
+                    }
+                    for (let Item in Data) {
+                        Data[Item] = this.Dependencies.CryptoJS.Decrypt(Data[Item]);
+                    }
+                    return Data;
+                },
+                ArrayObjects: (Data) => {
+                    if (typeof Data !== 'object') {
+                        return Data;
+                    }
+                    Data.forEach((ObjectData, IndexArray) => {
+                        for (let Item in ObjectData) {
+                            ObjectData[Item] = this.Dependencies.CryptoJS.Decrypt(ObjectData[Item]);
                         }
                     });
                     return Data;
@@ -648,7 +704,7 @@ export class APIRest {
             GlobalVariables.Request.Headers = null;
             if (GlobalVariables.Request.Object.Request.headers.apirest_properties_request !== undefined) {
                 if (GlobalVariables.Request.Object.Request.headers.apirest_properties_request !== '') {
-                    GlobalVariables.Request.Headers = JSON.parse(GlobalVariables.Request.Object.Request.headers.apirest_properties_request);
+                    GlobalVariables.Request.Headers = GlobalVariables.Request.Object.Request.headers.apirest_decryptdata_request !== undefined ? JSON.parse(this.Dependencies.CryptoJS.Decrypt(GlobalVariables.Request.Object.Request.headers.apirest_properties_request)) : JSON.parse(GlobalVariables.Request.Object.Request.headers.apirest_properties_request);
                 }
             }
             GlobalVariables.Request.Body = null;
@@ -758,6 +814,9 @@ export class APIRest {
                 results: Results
             };
             GlobalVariables.Request.Object.Response.status(Code).jsonp({ code: Code, status: Status, type: Type, data: Data });
+        },
+        SetHeader: (NameHeader, ValueHeader) => {
+            GlobalVariables.Request.Object.Response.setHeader(NameHeader, ValueHeader);
         }
     };
     Middleware = () => {
