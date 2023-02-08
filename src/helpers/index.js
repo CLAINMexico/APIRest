@@ -28,7 +28,7 @@ export var GlobalVariables = {
     Application: {
         Name: 'APIRest',
         Slogan: 'Application Programming Interface REST',
-        Version: '1.0.1',
+        Version: '1.0.2',
         Environment: 'Development'
     },
     Server: {
